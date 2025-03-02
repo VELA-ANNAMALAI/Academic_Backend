@@ -345,6 +345,7 @@ export const generateCSV = async (req, res) => {
 };
 
 export const bulkupload = async (req, res) => {
+  console.log("Bulk upload initiated");
   try {
     const studentsData = Array.isArray(req.body.students) ? req.body.students : [];
 
@@ -352,20 +353,36 @@ export const bulkupload = async (req, res) => {
       return res.status(400).json({ message: 'No student data provided' });
     }
 
-    const result = await Student.insertMany(studentsData);
+    // Extract all registernos from the incoming data
+    const registernos = studentsData.map(student => student.registerno);
+
+    // Check for existing registernos in the database
+    const existingStudents = await Student.find({ registerno: { $in: registernos } });
+    const existingRegisternos = existingStudents.map(student => student.registerno);
+
+    // Filter out students that already exist
+    const newStudentsData = studentsData.filter(student => !existingRegisternos.includes(student.registerno));
+
+    if (newStudentsData.length === 0) {
+      return res.status(400).json({ message: 'All provided students already exist in the database.' });
+    }
+
+    // Insert the new students into the database
+    const result = await Student.insertMany(newStudentsData);
 
     res.status(201).json({
       message: 'Students added successfully',
       data: result
     });
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Error during bulk upload:", error);
     res.status(500).json({
       message: 'Error adding students',
       error: error.message
     });
   }
 };
+
 
 
 export const BulkStudentDataDownload = async (req,res) =>{
