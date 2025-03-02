@@ -15,10 +15,19 @@ const __dirname = dirname(__filename);
 
 
 export const getFacultyNames = async (req, res) => {
-  try {
-    const faculty = await Faculty.find({}, 'name'); // Fetch only the name field
+   try {
+    // Fetch faculty names and departments from the database
+    const faculty = await Faculty.find({}, 'name, department'); // Only select the name and department fields
+
+    // Check if any faculty members were found
+    if (!faculty || faculty.length === 0) {
+      return res.status(404).json({ message: 'No faculty members found' });
+    }
+
+    // Send the faculty data as a JSON response
     res.json(faculty);
   } catch (error) {
+    console.error('Error fetching faculty names:', error); // Log the error for debugging
     res.status(500).json({ message: 'Error fetching faculty names' });
   }
 };
