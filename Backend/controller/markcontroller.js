@@ -5,13 +5,13 @@ import XLSX from 'xlsx'
 import { parse } from 'xlsx';
 
 export const fetchCourses = async (req, res) => {
-  console.log("Request Query:", req.body); // Log the incoming query
+  console.log("Request Query:", req.query); // Log the incoming query
 
   try {
-    const { course, semester } = req.query;
+    const { course, semester,academicYear} = req.query;
   
     // Fetch courses from MongoDB (adjust to your model)
-    const courses = await Course.find({ courseName: course });
+    const courses = await Course.find({ courseName: course , academicYear: academicYear});
   
     // Check if semester is provided in the query
     if (semester) {
